@@ -16,6 +16,12 @@ Then to run the simulation:
 >./joby_simulation
 ```
 
+Note: There are two hard-coded runtime parameters in main: run-time and 
+iteration-mode. Run-time is the number real-world minutes to run and the 
+iteration-mode boolean selects between iterations based on the system clock 
+(1sec system time == 1min world time) or iterations based on a constant 
+0.6sec world time delta. I didn't have time to parameterize main().
+
 ### google test unit testing
 I created a couple of simple unit tests and included googletest as a git submodule. 
 I'm new to google tests (I usually use catch2) so I hope this works for you.
