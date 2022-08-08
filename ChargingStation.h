@@ -24,6 +24,7 @@ public:
     ChargingStation(const ChargingStation&) = delete;
     ChargingStation& operator=(const ChargingStation&) = delete;
 
+    // Add a vehicle to the wait queue
     void addVehicle(shared_ptr<IChargeable> chargeable);
 
     // Iterate manages the charging slots and wait queue

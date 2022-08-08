@@ -6,7 +6,7 @@
 
 // Test the iterate method
 TEST(VehicleTest, iterate) {
-    auto testModel = shared_ptr<ModelState>(new ModelState({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
+    auto testModel = shared_ptr<ModelData>(new ModelData({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
     Vehicle testVehicle(testModel);
     EXPECT_EQ(testVehicle.getOpState(), OperationState::en_route);
 
@@ -31,8 +31,8 @@ TEST(VehicleTest, iterate) {
 
 // Test the setWaitQueue method
 TEST(VehicleTest, setWaitQueue) {
-    auto testModel = shared_ptr<ModelState>(
-            new ModelState({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
+    auto testModel = shared_ptr<ModelData>(
+            new ModelData({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
     Vehicle testVehicle(testModel);
     EXPECT_EQ(testVehicle.getOpState(), OperationState::en_route);
 
@@ -42,8 +42,8 @@ TEST(VehicleTest, setWaitQueue) {
 
 // Test the setCharging & isCharging methods
 TEST(VehicleTest, setCharging) {
-    auto testModel = shared_ptr<ModelState>(
-            new ModelState({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
+    auto testModel = shared_ptr<ModelData>(
+            new ModelData({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
     Vehicle testVehicle(testModel);
     EXPECT_EQ(testVehicle.getOpState(), OperationState::en_route);
 

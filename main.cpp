@@ -23,10 +23,10 @@ enum ModelID {
 };
 
 // Convent typedef
-typedef std::map<ModelID, shared_ptr<ModelState>> VehicleModelMap;
+typedef std::map<ModelID, shared_ptr<ModelData>> VehicleModelMap;
 
 // Get system time as a double
-double sys_time() {
+double sysTime() {
     struct timespec time_spec;
     assert(clock_gettime(CLOCK_MONOTONIC_RAW, &time_spec) == 0);
     double sys_time = time_spec.tv_sec + (time_spec.tv_nsec * 1e-9);
@@ -35,10 +35,10 @@ double sys_time() {
 
 // Function to initialize the various Vehicle "Models" in the simulation. In real life this could be data driven
 // based on the contents of setup files or something.
-void  initialize_models(VehicleModelMap& vehicleModels) {
+void  initializeModels(VehicleModelMap& vehicleModels) {
     // Define the specific Models (this could potentially be made data-driven)
     // Alpha
-    shared_ptr<ModelState> alphaState(new ModelState {
+    shared_ptr<ModelData> alphaState(new ModelData {
         {
             "Alpha",
             120.0,       // Speed (mph)
@@ -57,7 +57,7 @@ void  initialize_models(VehicleModelMap& vehicleModels) {
     vehicleModels[ModelID::alpha] = alphaState;
 
     // Beta
-    shared_ptr<ModelState> betaState(new ModelState {
+    shared_ptr<ModelData> betaState(new ModelData {
         {
             "Beta",
             100.0,       // Speed (mph)
@@ -76,7 +76,7 @@ void  initialize_models(VehicleModelMap& vehicleModels) {
     vehicleModels[ModelID::beta] = betaState;
 
     // Charlie
-    shared_ptr<ModelState> charlieState(new ModelState {
+    shared_ptr<ModelData> charlieState(new ModelData {
         {
             "Charlie",
             160.0,       // Speed (mph)
@@ -95,7 +95,7 @@ void  initialize_models(VehicleModelMap& vehicleModels) {
     vehicleModels[ModelID::charlie] = charlieState;
 
     // Delta
-    shared_ptr<ModelState> deltaState(new ModelState {
+    shared_ptr<ModelData> deltaState(new ModelData {
         {
             "Delta",
             90.0,       // Speed (mph)
@@ -114,7 +114,7 @@ void  initialize_models(VehicleModelMap& vehicleModels) {
     vehicleModels[ModelID::delta] = deltaState;
 
     // Echo
-    shared_ptr<ModelState> echoState(new ModelState {
+    shared_ptr<ModelData> echoState(new ModelData {
         {
             "Echo",
             30.0,        // Speed (mph)
@@ -138,17 +138,18 @@ void  initialize_models(VehicleModelMap& vehicleModels) {
 // of randomly select vehicle models.
 //
 // Params:
-//   useRealTime - If true, use the system clock and each system second is 1 sim minutes.
+//   useRealTime - If true, use the system clock to calculate increment time delta so that
+//                 each system second is 1 sim minutes.
 //                 If false, each pass through the main loop increments world time by 0.6 seconds.
-//   runTime     - Number of world time minutes to run for
-void run_simulation(bool useRealTime, double runTime) {
+//   runTime     - Number of world time minutes to run the simulation
+void runSimulation(bool useRealTime, double runTime) {
     // We're going to want some randomness
     std::random_device rd;
     std::default_random_engine rng(rd());
 
-    // Create a map from Model ModelID to ModelState records
+    // Create a map from Model ModelID to ModelData records
     VehicleModelMap modelStates;
-    initialize_models(modelStates);
+    initializeModels(modelStates);
 
     // Generate the Fleet
     // Create a random assortment of vehicles and store in a vector
@@ -159,7 +160,7 @@ void run_simulation(bool useRealTime, double runTime) {
 
         // If there's an entry for the model in the model map add a new vehicle to the fleet
         if (modelStates.count(nextModel) != 0) { // Just making sure there's a entry for this model
-            shared_ptr<ModelState> model = modelStates[nextModel];
+            shared_ptr<ModelData> model = modelStates[nextModel];
             vehicles.push_back(shared_ptr<Vehicle>(new Vehicle(model)));
             ++(model->fleetCount);
             ++vehicleCount;
@@ -173,7 +174,7 @@ void run_simulation(bool useRealTime, double runTime) {
     // Simulation loop:
     double increment = 0.01; // The value only maters if we're not using the system clock
     double currentTime = 0.0; // Start currentTime delta
-    double now = sys_time(); // Only used when using the real time clock;
+    double now = sysTime(); // Only used when using the real time clock;
     double startTime = now;
 
     unsigned long totalIterations = 0; // Just here for debugging
@@ -182,7 +183,7 @@ void run_simulation(bool useRealTime, double runTime) {
         if (useRealTime) {
             // We're using the system clock to calculate the next increment
             double lastTime = now;
-            now = sys_time();
+            now = sysTime();
             increment = now - lastTime;
         }
 
@@ -218,7 +219,7 @@ void run_simulation(bool useRealTime, double runTime) {
         ++totalIterations;
     }
     // Print some run data
-    double totalRunTime = sys_time() - startTime;
+    double totalRunTime = sysTime() - startTime;
     cout << "Simulation finished, total-run-time(seconds)/total-iterations: " << totalRunTime << "/" << totalIterations << endl << endl;
 
     // Done with the simulation, now print out results.
@@ -236,10 +237,10 @@ void run_simulation(bool useRealTime, double runTime) {
 
 }
 
-
+//TODO: parameterize main to input runtime and iteration type
 int main() {
-    double runTime = 60.0 * 3.0;
-    bool useSysClock = true;
-    run_simulation(useSysClock, runTime);
+    double runTime = 60.0 * 3.0; // Run time is in minutes (60.0 * 3.0 == 180 minutes or 3 hours world time)
+    bool useSysClock = true; // boolean to make iteration size based on clock time or simple world time delta
+    runSimulation(useSysClock, runTime);
     return 0;
 }

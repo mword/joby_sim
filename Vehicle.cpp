@@ -5,15 +5,14 @@
 using std::cout;
 using std::endl;
 
-Vehicle::Vehicle(shared_ptr<ModelState> results) :
-modelState(results),
-    operationState(en_route),
-    currentOperationTime(0.0),
-    totalTimeEnRoute(0.0),
-    totalTimeCharging(0.0),
-    totalTimeWaiting(0.0)
+Vehicle::Vehicle(shared_ptr<ModelData> modelData) :
+        modelState(modelData),
+        operationState(en_route),
+        currentOperationTime(0.0),
+        totalTimeEnRoute(0.0),
+        totalTimeCharging(0.0),
+        totalTimeWaiting(0.0)
 {
-    //cout << "Endurance is: " << modelState.params.endurance << endl;
 };
 
 Vehicle::~Vehicle() {
@@ -23,7 +22,7 @@ Vehicle::~Vehicle() {
 // Implementation of ICharging interface
 void Vehicle::setCharging() {
     operationState = OperationState::charging;
-    currentOperationTime = 0; //This is one iteration too low
+    currentOperationTime = 0;
 }
 
 bool Vehicle::isCharging () const {
@@ -48,9 +47,12 @@ void Vehicle::iterate(double deltaT) {
     switch (operationState) {
         case en_route: {
             if (newOperationTime >= modelState->params.endurance) {
-                // Calculate time overrun and change state
                 operationState = OperationState::waiting_for_charge_queue; //This is an intermediate state
-                currentOperationTime = newOperationTime - modelState->params.endurance;
+                // Reset operation time - there may be an overrun
+                currentOperationTime = 0;
+                if (newOperationTime > modelState->params.endurance) {
+                    currentOperationTime = newOperationTime - modelState->params.endurance;
+                }
             } else {
                 currentOperationTime = newOperationTime;
                 totalTimeEnRoute += deltaT;   // Total for vehicle (sim minutes)
@@ -60,22 +62,25 @@ void Vehicle::iterate(double deltaT) {
         };
         case waiting_for_charge_queue: {
             // This state should never be set at the beginning of an iteration as the
-            // charging station will add the vehicle to its queue during its part of the loop
+            // the vehicle should be moved to the wait queue before the iteration is over.
             assert(true);
             break;
         };
         case in_charge_queue: {
             // This could be a bit off (one deltaT) because the following charging station iterate()
-            // might have start charging this vehicle during this loop
+            // might start charging this vehicle
             totalTimeWaiting += deltaT;  // Total for vehicle (sim minutes)
             modelState->totalWaitingTime += deltaT; // Total for model (sim minutes)
             break;
         };
         case charging: {
             if (newOperationTime >= modelState->params.timeToCharge) {
-                // Calculate the overrun and change state
                 operationState = OperationState::en_route;
-                currentOperationTime = newOperationTime - modelState->params.timeToCharge;
+                // Reset operation time - there may be an overrun
+                currentOperationTime = 0;
+                if (newOperationTime > modelState->params.endurance) {
+                    currentOperationTime = newOperationTime - modelState->params.endurance;
+                }
             } else {
                 currentOperationTime = newOperationTime;
                 totalTimeCharging += deltaT;   // Total for vehicle (sim minutes)
@@ -97,7 +102,7 @@ void Vehicle::printResult() const {
     cout << "  Total Passenger Miles      : " << (totalTimeEnRoute / 60.0) * modelState->params.cruiseSpeed * modelState->params.passengerCount << endl;
 }
 
-void ModelState::prinResult() {
+void ModelData::prinResult() {
     double totalPassengerMiles = params.cruiseSpeed * (totalFlightTime/60.0) *params.passengerCount;
     cout << params.label << " Results: " << endl;
     cout << "   Number of Vehicle            : " << fleetCount << endl;

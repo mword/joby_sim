@@ -13,10 +13,11 @@ enum OperationState {
     charging,
 };
 
-// These structures store Vehicle Model state. Vehicles of the same model
+// These structures store Vehicle Model date. Vehicles of the same model
 // share a single Model Record.
 // I did this (as opposed to subclassing a vehicle for each particular model) so class changes wouldn't be
 // necessary to add or remove Models from the flying population.
+
 struct ModelParameters {
     const std::string label;
     const double cruiseSpeed;           // mph
@@ -28,7 +29,7 @@ struct ModelParameters {
     const double endurance;             // minutes/trip
 };
 
-struct ModelState {
+struct ModelData {
     const ModelParameters params;
     unsigned int fleetCount;
     double totalFlightTime;
@@ -45,11 +46,13 @@ class Vehicle : public IChargeable {
 
 private:
 
-    // Model Results
-    shared_ptr<ModelState> modelState;
+    // Shared model parameters and totals - this structure is shared
+    // by all vehicles of the same model
+    shared_ptr<ModelData> modelState;
 
-    // State
+    // Current operation mode
     OperationState operationState;
+    // Duration of current operation mode
     double currentOperationTime;
 
     // Per Vehicle totals
@@ -60,7 +63,8 @@ private:
 
 public:
     // Only need one constructor - we're not doing any copying
-    Vehicle(shared_ptr<ModelState> results);
+    // Model data is a structure shared amongst vehicle of a common type.
+    Vehicle(shared_ptr<ModelData> modelData);
 
     // Prevent unneeded defaults
     Vehicle(const Vehicle&) = delete;
@@ -74,35 +78,16 @@ public:
     // Print out various results;
     void printResult() const;
 
-    // Accessor for operation state which should be of internal
-    // interest only - so just used for tests
+    // Accessor for operation state - this isn't used except testing
+    // as operation state is a internal detail.
     OperationState getOpState() const;
 
-    // From IChargeable
+    // From IChargeable for ChargingStation interaction
     void setCharging() override;
     bool isCharging () const override;
     bool isWaitingForQueue() const override;
     void setInWaitQueue() override;
 
-private:
-
-
 };
 
-
-// I like the idea of having a type per vehicle model which allows me to define a set of statics for each model
-// to store model parameters and collect model runtime state. The problem is that this makes the code less flexible
-// because the Models would need to be defined and initialized at compile time and adding a new model would require
-// a recompile.  In any case, it would look something like this.
-//template<ModelID TID>
-//class Model: public Vehicle {
-//private:
-//    ModelID typeId;
-//
-//public:
-//    Model() :
-//          typeId(TID),
-//          Vehicle(...){}
-//
-//};
 #endif //_VEHICLE_H

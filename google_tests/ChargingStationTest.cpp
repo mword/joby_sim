@@ -16,7 +16,7 @@ TEST(ChargingStationTest, add_Vehicle_And_Iterate) {
     ChargingStation chargingStation(1);
 
     // A vehicle to test
-    auto testModel = shared_ptr<ModelState>(new ModelState({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
+    auto testModel = shared_ptr<ModelData>(new ModelData({{"Test", 22.0, 33.0, 44.0, 55.0, 3, 0.66, 77.0}, 5, 7, 11, 13}));
     auto testVehicle = shared_ptr<Vehicle>(new Vehicle(testModel));
     EXPECT_EQ(testVehicle->getOpState(), OperationState::en_route);
 
