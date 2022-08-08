@@ -11,7 +11,7 @@ This should work to build:
 > cmake -DCMAKE_BUILD_TYPE=Debug ../
 > make
 ```
-Then to run the simulattion:
+Then to run the simulation:
 ```
 >./joby_simulation
 ```
