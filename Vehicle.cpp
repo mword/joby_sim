@@ -78,8 +78,8 @@ void Vehicle::iterate(double deltaT) {
                 operationState = OperationState::en_route;
                 // Reset operation time - there may be an overrun
                 currentOperationTime = 0;
-                if (newOperationTime > modelState->params.endurance) {
-                    currentOperationTime = newOperationTime - modelState->params.endurance;
+                if (newOperationTime > modelState->params.timeToCharge) {
+                    currentOperationTime = newOperationTime - modelState->params.timeToCharge;
                 }
             } else {
                 currentOperationTime = newOperationTime;
